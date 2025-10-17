@@ -1,0 +1,66 @@
+{
+  "name": "Webhook Evolution (teste seguro)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "karolABO",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "Webhook1",
+      "name": "Webhook (Evolution)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [-260, 220]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validação simples via header X-Webhook-Token\n// Esperado via env SECRET_WEBHOOK_TOKEN ou string 'CHANGE_ME'\nconst token = $json.headers?.['x-webhook-token'] || $json.headers?.['X-Webhook-Token'];\nconst expected = $env.SECRET_WEBHOOK_TOKEN || 'CHANGE_ME';\n\nif (token !== expected) {\n  return [{ statusCode: 401, body: { ok: false, error: 'unauthorized' } }];\n}\n\n// Monte a resposta rápida para evitar timeout do Evolution\nreturn [{\n  statusCode: 200,\n  body: {\n    ok: true,\n    message: 'received',\n    echo: $json.body || null\n  }\n}];"
+      },
+      "id": "Function1",
+      "name": "Validate & Build Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [40, 220]
+    },
+    {
+      "parameters": {
+        "responseBody": "={{$json.body}}",
+        "responseCode": "={{$json.statusCode}}",
+        "responseFormat": "json"
+      },
+      "id": "Respond1",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [340, 220]
+    }
+  ],
+  "connections": {
+    "Webhook (Evolution)": {
+      "main": [
+        [
+          {
+            "node": "Validate & Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Build Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false
+}
