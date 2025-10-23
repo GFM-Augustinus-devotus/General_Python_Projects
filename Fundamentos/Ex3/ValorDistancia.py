@@ -9,4 +9,4 @@ elif distance > 200:
     valor = distance * 0.35
     print(f"O valor final é: {valor:.2f}")
 else:
-    print("Valor inválido") 
+    print("Valor inválido, faça novamente") 
